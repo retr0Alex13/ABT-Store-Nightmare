@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Ami.Extension;
 
@@ -52,7 +49,7 @@ namespace Ami.BroAudio.Demo
             {
                 textureMix[i] = alphaMapValues[0, 0, i];
             }
-            
+ 
         }
     } 
 }
