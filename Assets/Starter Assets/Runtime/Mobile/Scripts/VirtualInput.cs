@@ -1,4 +1,4 @@
-using StarterAssets;
+using Player.Controls;
 using UnityEngine;
 
 public class VirtualInput : MonoBehaviour
