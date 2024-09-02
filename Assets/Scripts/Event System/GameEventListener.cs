@@ -8,12 +8,12 @@ public class GameEventListener : MonoBehaviour
     [SerializeField]
     private UnityEvent response;
 
-    private void OnEnable()
+    private void Awake()
     {
         gameEvent.RegisterListener(this);
     }
 
-    private void OnDisable()
+    private void OnDestroy()
     {
         gameEvent.UnregisterListener(this);
     }
