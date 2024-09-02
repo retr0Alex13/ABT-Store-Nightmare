@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -24,6 +25,11 @@ namespace Player.Controls
         public bool IsWalking;
         [Tooltip("Is character running")]
         public bool IsRunning;
+        [Tooltip("Is character interacts")]
+        public bool IsInteracting;
+
+        [SerializeField]
+        private GameEvent OnInteract;
 
         [Space(10)]
         [Tooltip("The height the player can jump")]
@@ -64,6 +70,7 @@ namespace Player.Controls
         private float _rotationVelocity;
         private float _verticalVelocity;
         private float _terminalVelocity = 53.0f;
+        private bool _wasInteracting;
 
         // timeout deltatime
         private float _jumpTimeoutDelta;
@@ -120,6 +127,7 @@ namespace Player.Controls
             JumpAndGravity();
             GroundedCheck();
             Move();
+            Interact();
         }
 
         private void LateUpdate()
@@ -132,32 +140,18 @@ namespace Player.Controls
             // set sphere position, with offset
             Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z);
             Grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers, QueryTriggerInteraction.Ignore);
-
-
-        }
-
-        public bool IsOnTerrainTag(string terrainTag)
-        {
-            if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit) && hit.collider.gameObject.CompareTag(terrainTag))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
         }
 
         private void CameraRotation()
         {
             // if there is an input
-            if (_input.look.sqrMagnitude >= _threshold)
+            if (_input.GetLook().sqrMagnitude >= _threshold)
             {
                 //Don't multiply mouse input by Time.deltaTime
                 float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
 
-                _cinemachineTargetPitch += _input.look.y * RotationSpeed * deltaTimeMultiplier;
-                _rotationVelocity = _input.look.x * RotationSpeed * deltaTimeMultiplier;
+                _cinemachineTargetPitch += _input.GetLook().y * RotationSpeed * deltaTimeMultiplier;
+                _rotationVelocity = _input.GetLook().x * RotationSpeed * deltaTimeMultiplier;
 
                 // clamp our pitch rotation
                 _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
@@ -173,19 +167,19 @@ namespace Player.Controls
         private void Move()
         {
             // set target speed based on move speed, sprint speed and if sprint is pressed
-            float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
+            float targetSpeed = _input.IsSprinting() ? SprintSpeed : MoveSpeed;
 
             // a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon
 
             // note: Vector2's == operator uses approximation so is not floating point error prone, and is cheaper than magnitude
             // if there is no input, set the target speed to 0
-            if (_input.move == Vector2.zero) targetSpeed = 0.0f;
+            if (_input.GetMove() == Vector2.zero) targetSpeed = 0.0f;
 
             // a reference to the players current horizontal velocity
             float currentHorizontalSpeed = new Vector3(_controller.velocity.x, 0.0f, _controller.velocity.z).magnitude;
 
             float speedOffset = 0.1f;
-            float inputMagnitude = _input.analogMovement ? _input.move.magnitude : 1f;
+            float inputMagnitude = _input.GetAnalog() ? _input.GetMove().magnitude : 1f;
 
             // accelerate or decelerate to target speed
             if (currentHorizontalSpeed < targetSpeed - speedOffset || currentHorizontalSpeed > targetSpeed + speedOffset)
@@ -203,24 +197,17 @@ namespace Player.Controls
             }
 
             // normalise input direction
-            Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
+            Vector3 inputDirection = new Vector3(_input.GetMove().x, 0.0f, _input.GetMove().y).normalized;
 
             // note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
             // if there is a move input rotate player when the player is moving
-            if (_input.move != Vector2.zero)
+            if (_input.GetMove() != Vector2.zero)
             {
                 // move
-                inputDirection = transform.right * _input.move.x + transform.forward * _input.move.y;
-                if (_input.sprint)
-                {
-                    IsWalking = false;
-                    IsRunning = true;
-                }
-                else
-                {
-                    IsWalking = true;
-                    IsRunning = false;
-                }
+                inputDirection = transform.right * _input.GetMove().x + transform.forward * _input.GetMove().y;
+
+                IsRunning = _input.IsSprinting();
+                IsWalking = !IsRunning;
             }
             else
             {
@@ -246,7 +233,7 @@ namespace Player.Controls
                 }
 
                 // Jump
-                if (_input.jump && _jumpTimeoutDelta <= 0.0f)
+                if (_input.IsJumping() && _jumpTimeoutDelta <= 0.0f)
                 {
                     // the square root of H * -2 * G = how much velocity needed to reach desired height
                     _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
@@ -270,7 +257,7 @@ namespace Player.Controls
                 }
 
                 // if we are not grounded, do not jump
-                _input.jump = false;
+                _input.JumpInput(false);
             }
 
             // apply gravity over time if under terminal (multiply by delta time twice to linearly speed up over time)
@@ -278,6 +265,25 @@ namespace Player.Controls
             {
                 _verticalVelocity += Gravity * Time.deltaTime;
             }
+        }
+
+        private void Interact()
+        {
+            bool isInteracting = _input.IsInteracting();
+
+            // Check if the interact button was just pressed down
+            if (isInteracting && !_wasInteracting)
+            {
+                IsInteracting = true;
+                OnInteract?.Raise(); // Trigger the interact event once
+            }
+            else
+            {
+                IsInteracting = false;
+            }
+
+            // Update the previous state
+            _wasInteracting = isInteracting;
         }
 
         private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
