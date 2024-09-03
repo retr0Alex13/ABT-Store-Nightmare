@@ -9,7 +9,10 @@ public class DialogueManager : MonoBehaviour
     [SerializeField] private GameObject dialogueBox;
     [SerializeField] private TextMeshProUGUI dialogueText;
     [SerializeField] private SoundID textSFX;
+    [Space(10)]
+    [SerializeField] private GameEvent OnDialogue;
     private Queue<string> sentences;
+    private bool isDialogueActive;
 
     void Start()
     {
@@ -18,7 +21,11 @@ public class DialogueManager : MonoBehaviour
 
     public void StartDialogue(Dialogue dialogue)
     {
+        if (isDialogueActive) return;
+        isDialogueActive = true;
+
         sentences.Clear();
+        OnDialogue?.Raise();
 
         foreach (string sentence in dialogue.sentences)
         {
@@ -28,12 +35,14 @@ public class DialogueManager : MonoBehaviour
         DisplayNextSentance();
     }
 
-    [ContextMenu("DisplayNextSentance")]
     public void DisplayNextSentance()
     {
+        if (!isDialogueActive) return;
+
         if (sentences.Count == 0)
         {
             EndDialogue();
+            OnDialogue?.Raise();
             return;
         }
 
@@ -56,6 +65,7 @@ public class DialogueManager : MonoBehaviour
     private void EndDialogue() 
     {
         ToggleDialogueBox(false);
+        isDialogueActive = false;
     }
 
     public void ToggleDialogueBox(bool value)
