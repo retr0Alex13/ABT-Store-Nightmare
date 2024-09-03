@@ -21,12 +21,15 @@ namespace Player.Controls
         public float RotationSpeed = 1.0f;
         [Tooltip("Acceleration and deceleration")]
         public float SpeedChangeRate = 10.0f;
-        [Tooltip("Is character walking")]
+        [Tooltip("Character walking status")]
         public bool IsWalking;
-        [Tooltip("Is character running")]
+        [Tooltip("Character running status")]
         public bool IsRunning;
-        [Tooltip("Is character interacts")]
+        [Tooltip("Character interacting status")]
         public bool IsInteracting;
+        [Tooltip("Is character can move, look, rotate")]
+        [field: SerializeField]
+        public bool IsFreezed { get; private set; }
 
         [SerializeField]
         private GameEvent OnInteract;
@@ -124,15 +127,29 @@ namespace Player.Controls
 
         private void Update()
         {
-            JumpAndGravity();
-            GroundedCheck();
-            Move();
-            Interact();
+            if (!IsFreezed)
+            {
+                JumpAndGravity();
+                GroundedCheck();
+                Move();
+            }
+
+            HandleInteraction();
+
+            if (IsFreezed)
+            {
+                StopPlayer();
+                return;
+            }
+            
         }
 
         private void LateUpdate()
         {
-            CameraRotation();
+            if (!IsFreezed)
+            {
+                CameraRotation();
+            }
         }
 
         private void GroundedCheck()
@@ -211,8 +228,7 @@ namespace Player.Controls
             }
             else
             {
-                IsRunning = false;
-                IsWalking = false;
+                ResetMovementBools();
             }
 
             // move the player
@@ -267,7 +283,7 @@ namespace Player.Controls
             }
         }
 
-        private void Interact()
+        private void HandleInteraction()
         {
             bool isInteracting = _input.IsInteracting();
 
@@ -284,6 +300,38 @@ namespace Player.Controls
 
             // Update the previous state
             _wasInteracting = isInteracting;
+        }
+
+        private void StopPlayer()
+        {
+            ResetVelocity();
+            ResetInput();
+            ResetMovementBools();
+            StopControllerMovement();
+        }
+
+        private void ResetVelocity()
+        {
+            _speed = 0f;
+            _verticalVelocity = 0f;
+        }
+
+        private void ResetInput()
+        {
+            _input.MoveInput(Vector2.zero);
+            _input.JumpInput(false);
+            _input.SprintInput(false);
+        }
+
+        private void ResetMovementBools()
+        {
+            IsWalking = false;
+            IsRunning = false;
+        }
+
+        private void StopControllerMovement()
+        {
+            _controller.Move(Vector3.zero);
         }
 
         private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
@@ -303,6 +351,12 @@ namespace Player.Controls
 
             // when selected, draw a gizmo in the position of, and matching radius of, the grounded collider
             Gizmos.DrawSphere(new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z), GroundedRadius);
+        }
+
+        public void SetIsFreezed(bool value)
+        {
+            Debug.Log(value);
+            IsFreezed = value;
         }
     }
 }
