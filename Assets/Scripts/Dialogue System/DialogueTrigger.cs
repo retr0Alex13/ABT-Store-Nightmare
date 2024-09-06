@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class DialogueTrigger : MonoBehaviour
 {
+    [SerializeField] private bool triggerByCollider;
     [SerializeField] private Dialogue dialogue;
 
     private bool isTriggered;
@@ -13,16 +14,25 @@ public class DialogueTrigger : MonoBehaviour
         dialogueManager = FindObjectOfType<DialogueManager>();
     }
 
+
     public void TriggerDialogue()
     {
         dialogueManager.StartDialogue(dialogue);
+        dialogueManager.ToggleDialogueBox(true);
+        isTriggered = true;
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (isTriggered) { return; }
+        if (!triggerByCollider) 
+        { 
+            return; 
+        }
+        if (isTriggered) 
+        { 
+            return;
+        }
+
         TriggerDialogue();
-        dialogueManager.ToggleDialogueBox(true);
-        isTriggered = true;
     }
 }
