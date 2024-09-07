@@ -3,6 +3,7 @@ using TMPro;
 using Ami.BroAudio;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Events;
 
 public class DialogueManager : MonoBehaviour
 {
@@ -11,6 +12,7 @@ public class DialogueManager : MonoBehaviour
     [SerializeField] private SoundID textSFX;
     [Space(10)]
     [SerializeField] private GameEvent OnDialogue;
+    private UnityEvent onDialogueEnded;
     private Queue<string> sentences;
     private bool isDialogueActive;
 
@@ -66,10 +68,19 @@ public class DialogueManager : MonoBehaviour
     {
         ToggleDialogueBox(false);
         isDialogueActive = false;
+        onDialogueEnded?.Invoke();
     }
 
     public void ToggleDialogueBox(bool value)
     {
         dialogueBox.gameObject.SetActive(value);
+    }
+
+    public void SetUnityEvent(UnityEvent unityEvent)
+    {
+        if (unityEvent != null)
+        {
+            onDialogueEnded = unityEvent;
+        }
     }
 }

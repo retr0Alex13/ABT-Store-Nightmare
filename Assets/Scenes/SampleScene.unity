@@ -1632,6 +1632,21 @@ MonoBehaviour:
       snack from the ABT store
     - There will be no time for that tomorrow. ABT store should still be open but
       I'm better hurry
+  unityEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1937049687}
+        m_TargetAssemblyTypeName: UnityEngine.Playables.PlayableDirector, UnityEngine
+        m_MethodName: Resume
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1937049686
 GameObject:
   m_ObjectHideFlags: 0
@@ -1700,6 +1715,7 @@ MonoBehaviour:
     m_Signals:
     - {fileID: 11400000, guid: 534c4d5d38510264f971dda38d44e7c9, type: 2}
     - {fileID: 11400000, guid: a4287233a07096b4e86acee00803e727, type: 2}
+    - {fileID: 11400000, guid: 123d63e58ebcfce44a87df042027a67a, type: 2}
     m_Events:
     - m_PersistentCalls:
         m_Calls:
@@ -1721,6 +1737,20 @@ MonoBehaviour:
           m_TargetAssemblyTypeName: Player.Controls.FirstPersonController, Assembly-CSharp
           m_MethodName: SetIsFreezed
           m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    - m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1937049687}
+          m_TargetAssemblyTypeName: UnityEngine.Playables.PlayableDirector, UnityEngine
+          m_MethodName: Pause
+          m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
             m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -2350,12 +2380,12 @@ PrefabInstance:
     - target: {fileID: 8997996947095583982, guid: c5efc39a8aaf6e64ea40e9ad573e9b47,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 8997996947095583982, guid: c5efc39a8aaf6e64ea40e9ad573e9b47,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 8997996947095583982, guid: c5efc39a8aaf6e64ea40e9ad573e9b47,
         type: 3}
